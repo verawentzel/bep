@@ -66,3 +66,22 @@ df_summary_sorted[['TPSA', 'MolLogP', 'MolWt', 'FpDensityMorgan2', 'HeavyAtomMol
                'CalcNumHeterocycles', 'CalcNumHeavyAtoms', 'CalcNumAromaticRings',
                'CalcNumAtoms', 'qed']] = descriptors
 df_summary_sorted.to_csv(f"{folder}v20.data.full_data_summary.txt", sep='\t', index=False)
+
+#######################################################################
+
+#importing datasets
+complete_df = pd.read_csv(f"{folder}v20.data.full_data_summary.txt", sep="\t")
+
+#extracting independent and dependent variable
+x=complete_df.iloc[:,[3,21]]
+y=complete_df.iloc[:,1]
+
+#splitting dataset into training and test set
+from sklearn.model_selection import train_test_split
+x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=0.33, random_state=42)
+
+#feature scaling
+from sklearn.preprocessing import StandardScaler
+st_x= StandardScaler()
+x_train=st_x.fit_transform(x_train)
+x_test=st_x.transform(x_test)
