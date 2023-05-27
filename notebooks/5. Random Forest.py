@@ -88,3 +88,11 @@ x_test=st_x.transform(x_test)
 
 print(x_train)
 print(x_test)
+
+# Fitting Decision Tree classifier to the training set
+from sklearn.ensemble import RandomForestClassifier
+classifier = RandomForestClassifier(n_estimators=10, criterion="entropy") #nestimators is requorednumber of trees in the trandom forest
+classifier.fit(x_train,y_train)
+
+# Predicting the test result
+y_pred = classifier.predict(x_test)
