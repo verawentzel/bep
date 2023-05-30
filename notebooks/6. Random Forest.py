@@ -84,6 +84,10 @@ r2 = r2_score(y_test, y_pred)
 
 
 plt.scatter(y_test,y_pred)
+plt.plot(y_test, line, color='red', label='line of current best fit')
+plt.xlabel('y_test')
+plt.ylabel('y_pred')
+plt.title('Scatterplot with Line of Best Fit (R2 = {:.2f})'.format(r2))
 plt.show()
 
 
