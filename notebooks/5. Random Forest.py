@@ -67,6 +67,11 @@ df_summary_sorted[['TPSA', 'MolLogP', 'MolWt', 'FpDensityMorgan2', 'HeavyAtomMol
                'CalcNumAtoms', 'qed']] = descriptors
 df_summary_sorted['ec50_mol'] = df_summary_sorted['apparent_ec50_umol'] / 1000000
 df_summary_sorted['ec50_molair'] = df_summary_sorted['ec50_mol']/ df_summary_sorted['MolWt']
+df_summary_sorted['molecule']=df_summary_sorted['cpd_smiles'].apply(lambda x: Chem.MolFromSmiles(x))
+df_summary_sorted['ECFP']=df_summary_sorted['molecule'].apply(lambda x: AllChem.GetMorganFingerprintAsBitVect(x,2,nBits=1024))
+df_summary_sorted['ECFP'] = df_summary_sorted['ECFP'].apply(lambda x: int(x.ToBitString(),2))
+
+
 
 df_summary_sorted.to_csv(f"{folder}v20.data.full_data_summary.txt", sep='\t', index=False)
 

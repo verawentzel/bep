@@ -22,41 +22,25 @@ condition = (complete_df['ec50_molair'] < 1) | (complete_df['ec50_molair'] > 10)
 complete_df=complete_df[~condition]
 
 #extracting independent and dependent variable
-x=complete_df.iloc[:,3:22]
+x=complete_df['ECFP'].tolist()
 y = complete_df['ec50_molair']
-#y = -nm.log10(y) ## Let op: bij interpertreren en evalueren moet er eerst worden teruggeschaald met omgekeerde log-transformatie (np.expm1()).
-plt.plot(y)
-plt.show()
 
-plt.boxplot(y)
-#plt.hist(y)
-plt.ylabel('Log transformed EC50 value')
-plt.show()
-
-
- # Bereik/spreiding achterhalen vd doelvariabele
-std_dev = y.std()
-print("Standaarddeviatie:", std_dev)
-
-data_min = y.min()
-data_max = y.max()
-data_range = data_max - data_min
-print("Bereik (min-max):", data_range)
-
-q1 = y.quantile(0.25)
-q3 = y.quantile(0.75)
-iqr = q3 - q1
-print("Interkwartielafstand (IQR):", iqr)
+from sklearn.impute import SimpleImputer
+x = nm.array(x).reshape(-1, 1)
+imputer = SimpleImputer(strategy='mean')
+x = imputer.fit_transform(x)
 
 #splitting dataset into training and test set
 from sklearn.model_selection import train_test_split
-x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=0.33, random_state=42)
+x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=0.2, random_state=42)
 
 #feature scaling
 from sklearn.preprocessing import StandardScaler
 st_x= StandardScaler()
-x_train=st_x.fit_transform(x_train)
-x_test=st_x.transform(x_test)
+
+
+#x_train=st_x.fit_transform(x_train)
+#x_test=st_x.transform(x_test)
 
 # Fitting Decision Tree classifier to the training set | friedman_mse
 from sklearn.ensemble import RandomForestRegressor
@@ -84,6 +68,10 @@ r2 = r2_score(y_test, y_pred)
 
 
 plt.scatter(y_test,y_pred)
+plt.plot(y_test, line, color='red', label='line of current best fit')
+plt.xlabel('y_test')
+plt.ylabel('y_pred')
+plt.title('Scatterplot with Line of Best Fit (R2 = {:.2f})'.format(r2))
 plt.show()
 
 
