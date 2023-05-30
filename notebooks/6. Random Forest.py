@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import numpy as nm
 import matplotlib as mtp
 import pandas as pd
@@ -14,10 +15,37 @@ folder = 'C:\\Users\\vswen\\Documents\\1. Biomedische Technologie\\BMT JAAR 5\\K
 
 #importing datasets
 complete_df = pd.read_csv(f"{folder}v20.data.full_data_summary.txt", sep="\t")
+complete_df.fillna(complete_df.mean(), inplace=True)
+
+complete_df['ec50_molair'] = complete_df['apparent_ec50_umol'] / complete_df['MolWt']
 
 #extracting independent and dependent variable
-x=complete_df.iloc[:,[3,21]]
-y=complete_df.iloc[:,1]
+x=complete_df.iloc[:,3:22]
+print(x)
+y=complete_df["ec50_molair"]
+y = nm.log1p(y) ## Let op: bij interpertreren en evalueren moet er eerst worden teruggeschaald met omgekeerde log-transformatie (np.expm1()).
+
+
+
+plt.boxplot(y)
+#plt.hist(y)
+plt.ylabel('Log transformed EC50 value')
+plt.show()
+
+
+ # Bereik/spreiding achterhalen vd doelvariabele
+std_dev = y.std()
+print("Standaarddeviatie:", std_dev)
+
+data_min = y.min()
+data_max = y.max()
+data_range = data_max - data_min
+print("Bereik (min-max):", data_range)
+
+q1 = y.quantile(0.25)
+q3 = y.quantile(0.75)
+iqr = q3 - q1
+print("Interkwartielafstand (IQR):", iqr)
 
 #splitting dataset into training and test set
 from sklearn.model_selection import train_test_split
@@ -29,35 +57,28 @@ st_x= StandardScaler()
 x_train=st_x.fit_transform(x_train)
 x_test=st_x.transform(x_test)
 
-print(x_train)
-print(x_test)
-
 # Fitting Decision Tree classifier to the training set | friedman_mse
-from sklearn.ensemble import RandomForestClassifier
-classifier = RandomForestClassifier(n_estimators=10, criterion="entropy") #nestimators is requorednumber of trees in the trandom forest
-print(classifier)
-classifier.fit(x_train,y_train)
+from sklearn.ensemble import RandomForestRegressor
+regressor = RandomForestRegressor(n_estimators=100, random_state=42) #nestimators is requorednumber of trees in the trandom forest
+regressor.fit(x_train,y_train)
 
 
 # Predicting the test result
-y_pred = classifier.predict(x_test)
+y_pred = regressor.predict(x_test)
 
-#Creating the confusion matrix
-from sklearn.metrics    import confusion_matrix
-cm = confusion_matrix(y_test, y_pred)
+# Errors berekenen
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+mae=mean_absolute_error(y_test, y_pred)
+print('mean absolute error is ', mae)
 
-# Visualize the training set result
-from matplotlib.colors import ListedColormap
-x_set, y_set = x_train, y_train
-x1,x2 = nm.meshgrid(nm.arange(start=x_set[:,0].min() - 1, stop=[:,0].max()+1, step=0.01),
-nm.arange(start=x_set[:,1].mix()-1,stop=x_set[:,1].max()+1, step=0.01))
-mtp.contourf(x1,x2,classifier.predict(nm.array([x1.ravel(), x2.ravel()]).T).reshape(x1.shape),
-             alpha=0.75, cmap=ListedColormap(('purple','green')))
-mtp.xlim(x1.min(),x1.max())
-mtp.ylim(x2.min(). x2.max())
-for i, j in enumerate(nm.unique(y_set)):
-    mtp.scatter(x_set[y_set==j,0], x_set[y_set==j,1],
-                c=ListedColormap(('purple','green'))(i),label=j)
-mtp.title('Random Forest Algorithm (Training set)')
-mtp.legend()
-mtp.show()
+mse = mean_squared_error(y_test, y_pred)
+import math
+rmse = math.sqrt(mse)
+print('mean squared error is ', mse)
+print('root mean squared error is ', rmse)
+
+plt.scatter(y_test,y_pred)
+plt.show()
+
+r2 = r2_score(y_test, y_pred)
+print('r2 score is ', r2)

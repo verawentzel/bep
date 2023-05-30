@@ -65,34 +65,9 @@ df_summary_sorted[['TPSA', 'MolLogP', 'MolWt', 'FpDensityMorgan2', 'HeavyAtomMol
                'CalcNumRotatableBonds', 'CalcNumLipinskiHBD', 'CalcNumLipinskiHBA',
                'CalcNumHeterocycles', 'CalcNumHeavyAtoms', 'CalcNumAromaticRings',
                'CalcNumAtoms', 'qed']] = descriptors
+df_summary_sorted['ec50_mol'] = df_summary_sorted['apparent_ec50_umol'] / 1000000
+df_summary_sorted['ec50_molair'] = df_summary_sorted['ec50_mol']/ df_summary_sorted['MolWt']
+
 df_summary_sorted.to_csv(f"{folder}v20.data.full_data_summary.txt", sep='\t', index=False)
 
 #######################################################################
-
-#importing datasets
-complete_df = pd.read_csv(f"{folder}v20.data.full_data_summary.txt", sep="\t")
-
-#extracting independent and dependent variable
-x=complete_df.iloc[:,[3,21]]
-y=complete_df.iloc[:,1]
-
-#splitting dataset into training and test set
-from sklearn.model_selection import train_test_split
-x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=0.33, random_state=42)
-
-#feature scaling
-from sklearn.preprocessing import StandardScaler
-st_x= StandardScaler()
-x_train=st_x.fit_transform(x_train)
-x_test=st_x.transform(x_test)
-
-print(x_train)
-print(x_test)
-
-# Fitting Decision Tree classifier to the training set
-from sklearn.ensemble import RandomForestClassifier
-classifier = RandomForestClassifier(n_estimators=10, criterion="entropy") #nestimators is requorednumber of trees in the trandom forest
-classifier.fit(x_train,y_train)
-
-# Predicting the test result
-y_pred = classifier.predict(x_test)
