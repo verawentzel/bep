@@ -1,17 +1,18 @@
 import numpy as nm
-import matplotlib as mtp
 import pandas as pd
-from rdkit import Chem
 from rdkit.Chem import AllChem
-import csv
-import random
 from tqdm.auto import tqdm
 from rdkit.Chem.QED import qed
 from rdkit.Chem import Descriptors, rdMolDescriptors
 from sklearn import preprocessing as pre
+from rdkit import Chem
+from rdkit.Chem import MACCSkeys
 
+
+# Import online Data Frame
 folder = 'C:\\Users\\vswen\\Documents\\1. Biomedische Technologie\\BMT JAAR 5\\Kwart 4\\4. Data\\CTRPv2.0_2015_ctd2_ExpandedDataset\\'
 
+# Dataframe met kernwaarden aanmaken
 df_large = pd.read_csv(f"{folder}v20.data.curves_post_qc_419.txt", sep='\t')
 df_summary = df_large[[ 'master_cpd_id','apparent_ec50_umol']]
 
@@ -22,6 +23,8 @@ df_all = pd.merge(df_summary, extracted_col, on='master_cpd_id', how='left')
 df_summary_sorted = df_all.sort_values(by=['apparent_ec50_umol'])
 df_summary_sorted.to_csv(f"{folder}v20.data.final_summary.txt", sep='\t', index=False)
 
+
+# Aanmaken Mol Descriptors
 def mol_descriptor(smiles: list[str], scale: bool = True) -> nm.ndarray:
     X = []
     for smi in tqdm(smiles):
@@ -53,26 +56,36 @@ def mol_descriptor(smiles: list[str], scale: bool = True) -> nm.ndarray:
     return nm.array(X)
 
 
+# Dataframe met mol descriptors
 smiles_column = df_summary_sorted['cpd_smiles']
-
-# Call the mol_descriptor function with the 'cpd_smiles' values
 descriptors = mol_descriptor(smiles_column)
 
-# Add the descriptors to your existing DataFrame
 df_summary_sorted[['TPSA', 'MolLogP', 'MolWt', 'FpDensityMorgan2', 'HeavyAtomMolWt',
                'MaxPartialCharge', 'MinPartialCharge', 'NumRadicalElectrons',
                'NumValenceElectrons', 'CalcFractionCSP3', 'CalcNumRings',
                'CalcNumRotatableBonds', 'CalcNumLipinskiHBD', 'CalcNumLipinskiHBA',
                'CalcNumHeterocycles', 'CalcNumHeavyAtoms', 'CalcNumAromaticRings',
                'CalcNumAtoms', 'qed']] = descriptors
+
 df_summary_sorted['ec50_mol'] = df_summary_sorted['apparent_ec50_umol'] / 1000000
 df_summary_sorted['ec50_molair'] = df_summary_sorted['ec50_mol']/ df_summary_sorted['MolWt']
-df_summary_sorted['molecule']=df_summary_sorted['cpd_smiles'].apply(lambda x: Chem.MolFromSmiles(x))
-df_summary_sorted['ECFP']=df_summary_sorted['molecule'].apply(lambda x: AllChem.GetMorganFingerprintAsBitVect(x,2,nBits=1024))
-df_summary_sorted['ECFP'] = df_summary_sorted['ECFP'].apply(lambda x: int(x.ToBitString(),2))
 
+#####################################################################################
 
+# Fingerprint Data Frame aanmaken
+df_fingerprints = df_summary_sorted[['master_cpd_id','ec50_molair']]
+molecules = [Chem.MolFromSmiles(smiles) for smiles in df_summary_sorted['cpd_smiles'].tolist()]
 
-df_summary_sorted.to_csv(f"{folder}v20.data.full_data_summary.txt", sep='\t', index=False)
+## ECFP Aanmaken
+ecfp = [AllChem.GetMorganFingerprintAsBitVect(molecule,2,nBits=1024) for molecule in molecules]
+ecfp_bit_vectors = [[int(bit) for bit in keys.ToBitString()] for keys in ecfp]
+df_fingerprints['ECFP'] = ecfp_bit_vectors
+df_fingerprints.to_csv(f"{folder}v20.data.fingerprints.txt", sep='\t', index=False)
 
-#######################################################################
+## MACCS key Aanmaken
+maccs_keys = [MACCSkeys.GenMACCSKeys(molecule) for molecule in molecules]
+maccs_bit_vectors = [[int(bit) for bit in keys.ToBitString()] for keys in maccs_keys]
+df_fingerprints['MACCS Keys'] = maccs_bit_vectors
+df_fingerprints.to_csv(f"{folder}v20.data.fingerprints.txt", sep='\t', index=False)
+
+#####################################################################################
