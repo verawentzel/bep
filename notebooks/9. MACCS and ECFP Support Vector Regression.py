@@ -23,13 +23,26 @@ for string in complete_df['MACCS Keys']:
     MACCS_single_list = ast.literal_eval(string)
     MACCS_list.append(MACCS_single_list)
 
+
+#ECFP_string = complete_df['ECFP']
+#ECFP_list = []
+#import ast
+#for string in complete_df['ECFP']:
+ #   ECFP_single_list = ast.literal_eval(string)
+  #  ECFP_list.append(ECFP_single_list)
+
+ECFP_string = complete_df['ECFP']
+for string in complete_df['ECFP']:
+    ECFP_single_list = ast.literal_eval(string)
+    MACCS_list.append(ECFP_single_list)
+
+#Fingerprints = ECFP_list + MACCS_list
+#print(Fingerprints[1])
+
 #extracting independent and dependent variable
-x = MACCS_list
+x=MACCS_list
 y = complete_df['ec50_molair'].values
 
-# Vorm van X wijzigen naar (n_samples, 1)
-# x = nm.ravel(x)
-# x = nm.reshape(x, (1, -1))
 
 # Verdeel de gegevens in trainings- en testsets
 X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
