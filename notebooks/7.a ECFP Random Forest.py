@@ -10,7 +10,7 @@ complete_df.fillna(complete_df.mean(), inplace=True)
 
 #grenswaarden ec50 aangeven
 complete_df['ec50_molair'] = -nm.log10(complete_df['ec50_molair'])
-condition = (complete_df['ec50_molair'] < 1) | (complete_df['ec50_molair'] > 10)
+condition = (complete_df['ec50_molair'] < 4) | (complete_df['ec50_molair'] > 10)
 complete_df=complete_df[~condition]
 
 #ECFP uitlezen
@@ -38,27 +38,28 @@ x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=0.2, random_state=4
 
 from sklearn.model_selection import RandomizedSearchCV
 # Number of trees in random forest
-n_estimators = [int(x) for x in nm.linspace(start = 200, stop = 2000, num = 10)]
+#n_estimators = [int(x) for x in nm.linspace(start = 200, stop = 2000, num = 10)]
 # Maximum number of levels in tree
-max_depth = [int(x) for x in nm.linspace(10, 110, num = 11)]
-max_depth.append(None)
+#max_depth = [int(x) for x in nm.linspace(10, 110, num = 11)]
+#max_depth.append(None)
 # Minimum number of samples required to split a node
-min_samples_split = [2, 5, 10]
+#min_samples_split = [2, 5, 10]
 # Minimum number of samples required at each leaf node
-min_samples_leaf = [1, 2, 4]
+#min_samples_leaf = [1, 2, 4]
 # Method of selecting samples for training each tree
-bootstrap = [True, False]
-random_grid = {'n_estimators': n_estimators,
-               'max_depth': max_depth,
-               'min_samples_split': min_samples_split,
-               'min_samples_leaf': min_samples_leaf,
-               'bootstrap': bootstrap}
+#bootstrap = [True, False]
+#random_grid = {'n_estimators': n_estimators,
+ #              'max_depth': max_depth,
+  #             'min_samples_split': min_samples_split,
+   #            'min_samples_leaf': min_samples_leaf,
+    #           'bootstrap': bootstrap}
 
 # Fitting Decision Tree classifier to the training set | friedman_mse
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.ensemble import RandomForestRegressor
 #regressor = RandomForestRegressor(n_estimators=1024, random_state=42) #nestimators is requorednumber of trees in the trandom forest
-regressor = RandomizedSearchCV(estimator = RandomForestRegressor(random_state = 42), param_distributions = random_grid, n_iter = 100, cv = 3, verbose=2, random_state=42, n_jobs = -1)
+#estimator = RandomForestRegressor(random_state = 42), param_distributions = random_grid, n_iter = 100, cv = 3, verbose=2, random_state=42, n_jobs = -1)
+regressor = RandomForestRegressor(n_estimators=200, min_samples_split=5,min_samples_leaf=4,max_depth=10,bootstrap=True)
 regressor.fit(x_train,y_train)
 
 
@@ -80,12 +81,11 @@ slope, intercept = nm.polyfit(y_test,y_pred,1)
 line = slope * nm.array(y_test)+ intercept
 r2 = r2_score(y_test, y_pred)
 
-print('y_test =',y_test)
-print('y_pred =',y_pred)
-
 plt.scatter(y_test,y_pred)
 plt.plot(y_test, line, color='red', label='line of current best fit')
 plt.xlabel('y_test')
 plt.ylabel('y_pred')
+plt.xlim(1,10)
+plt.ylim(1,10)
 plt.title('Scatterplot with Line of Best Fit (R2 = {:.2f})'.format(r2))
 plt.show()
