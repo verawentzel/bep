@@ -3,6 +3,7 @@ import numpy as nm
 import pandas as pd
 from sklearn.svm import SVR
 from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error
 
@@ -12,20 +13,20 @@ folder = 'C:\\Users\\vswen\\Documents\\1. Biomedische Technologie\\BMT JAAR 5\\K
 complete_df = pd.read_csv(f"{folder}v20.data.fingerprints.txt", sep="\t")
 complete_df.fillna(complete_df.mean(), inplace=True)
 
-complete_df['ec50_molair'] = -nm.log10(complete_df['ec50_molair'])
-condition = (complete_df['ec50_molair'] < 1) | (complete_df['ec50_molair'] > 10)
+complete_df['ec50_mol'] = -nm.log10(complete_df['ec50_mol'])
+condition = (complete_df['ec50_mol'] < 1) | (complete_df['ec50_mol'] > 10)
 complete_df=complete_df[~condition]
 
-MACCS_string = complete_df['ECFP']
-MACCS_list = []
+ECFP_string = complete_df['ECFP']
+ECFP_list = []
 import ast
 for string in complete_df['ECFP']:
-    MACCS_single_list = ast.literal_eval(string)
-    MACCS_list.append(MACCS_single_list)
+    ECFP_single_list = ast.literal_eval(string)
+    ECFP_list.append(ECFP_single_list)
 
 #extracting independent and dependent variable
-x = MACCS_list
-y = complete_df['ec50_molair'].values
+x = ECFP_list
+y = complete_df['ec50_mol'].values
 
 # Vorm van X wijzigen naar (n_samples, 1)
 # x = nm.ravel(x)
@@ -35,10 +36,22 @@ y = complete_df['ec50_molair'].values
 X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 
 # Maak het SVR-model aan
-model = SVR(kernel='rbf')
+svr = SVR(kernel='rbf')
+
+# Parameter grid
+param_grid = {
+    'C': [0.1, 1, 10],
+    'epsilon': [0.01, 0.1, 1],
+    'kernel': ['linear', 'rbf']
+}
 
 # Train het model
+model=GridSearchCV(svr,param_grid, cv=5)
 model.fit(X_train, y_train)
+
+# Beste parameters en score weergeven
+print("Beste parameters: ", model.best_params_)
+print("Beste score: ", model.best_score_)
 
 # Maak voorspellingen op de testset
 y_pred  = model.predict(X_test)

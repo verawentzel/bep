@@ -1,15 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as nm
 import pandas as pd
-import matplotlib.pyplot as plt
-import numpy as nm
-import pandas as pd
-from sklearn.svm import SVR
-from sklearn.model_selection import train_test_split
-from sklearn.model_selection import GridSearchCV, train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import mean_squared_error
-
 
 folder = 'C:\\Users\\vswen\\Documents\\1. Biomedische Technologie\\BMT JAAR 5\\Kwart 4\\4. Data\\CTRPv2.0_2015_ctd2_ExpandedDataset\\'
 
@@ -18,8 +9,8 @@ complete_df = pd.read_csv(f"{folder}v20.data.fingerprints.txt", sep="\t")
 complete_df.fillna(complete_df.mean(), inplace=True)
 
 #grenswaarden ec50 aangeven
-complete_df['ec50_mol'] = -nm.log10(complete_df['ec50_mol'])
-condition = (complete_df['ec50_mol'] < 2) | (complete_df['ec50_mol'] > 10)
+complete_df['ec50_molair'] = -nm.log10(complete_df['ec50_molair'])
+condition = (complete_df['ec50_molair'] < 4) | (complete_df['ec50_molair'] > 10)
 complete_df=complete_df[~condition]
 
 #ECFP uitlezen
@@ -32,7 +23,7 @@ for string in complete_df['ECFP']:
 
 #extracting independent and dependent variable
 x=ECFP_list
-y = complete_df['ec50_mol'].values
+y = complete_df['ec50_molair'].values
 print('y=', y)
 
 #splitting dataset into training and test set
@@ -45,27 +36,13 @@ x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=0.2, random_state=4
 #x_test=st_x.transform(x_test)
 
 
-from sklearn.model_selection import RandomizedSearchCV
-n_estimators = [int(x) for x in nm.linspace(start = 200, stop = 2000, num = 10)]
-max_depth = [int(x) for x in nm.linspace(10, 110, num = 11)]
-max_depth.append(None)
-min_samples_split = [2, 5, 10]
-min_samples_leaf = [1, 2, 4]
-bootstrap = [True, False]
-random_grid = {'n_estimators': n_estimators,
-               'max_depth': max_depth,
-               'min_samples_split': min_samples_split,
-               'min_samples_leaf': min_samples_leaf,
-               'bootstrap': bootstrap}
 
-# Fitting Decision Tree classifier to the training set | friedman_mse
-from sklearn.model_selection import RandomizedSearchCV
 from sklearn.ensemble import RandomForestRegressor
-regressor = GridSearchCV(estimator=RandomForestRegressor(), param_grid=random_grid,cv=5)
-#n_estimators=1024, random_state=42) #nestimators is requorednumber of trees in the trandom forest
-#estimator = RandomForestRegressor(random_state = 42, param_distributions = random_grid, n_iter = 100, cv = 3, verbose=2, n_jobs = -1)
-#regressor = RandomForestRegressor(n_estimators=200, min_samples_split=5,min_samples_leaf=4,max_depth=10,bootstrap=True)
+#regressor = RandomForestRegressor(n_estimators=1024, random_state=42) #nestimators is requorednumber of trees in the trandom forest
+#estimator = RandomForestRegressor(random_state = 42), param_distributions = random_grid, n_iter = 100, cv = 3, verbose=2, random_state=42, n_jobs = -1)
+regressor = RandomForestRegressor(n_estimators=200, min_samples_split=5,min_samples_leaf=4,max_depth=10,bootstrap=True)
 regressor.fit(x_train,y_train)
+
 
 # Predicting the test result
 y_pred = regressor.predict(x_test)

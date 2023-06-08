@@ -21,8 +21,6 @@ extracted_col = df_smiles[["master_cpd_id","cpd_smiles"]]
 
 df_all = pd.merge(df_summary, extracted_col, on='master_cpd_id', how='left')
 df_summary_sorted = df_all.sort_values(by=['apparent_ec50_umol'])
-df_summary_sorted.to_csv(f"{folder}v20.data.final_summary.txt", sep='\t', index=False)
-
 
 # Aanmaken Mol Descriptors
 def mol_descriptor(smiles: list[str], scale: bool = True) -> nm.ndarray:
@@ -69,11 +67,14 @@ df_summary_sorted[['TPSA', 'MolLogP', 'MolWt', 'FpDensityMorgan2', 'HeavyAtomMol
 
 df_summary_sorted['ec50_mol'] = df_summary_sorted['apparent_ec50_umol'] / 1000000
 df_summary_sorted['ec50_molair'] = df_summary_sorted['ec50_mol']/ df_summary_sorted['MolWt']
+df_summary_sorted['ec50_molair']=df_summary_sorted['ec50_molair'].replace(0, 1e-10)
+df_summary_sorted.to_csv(f"{folder}v20.data.final_summary.txt", sep='\t', index=False)
+
 
 #####################################################################################
 
 # Fingerprint Data Frame aanmaken
-df_fingerprints = df_summary_sorted[['master_cpd_id','ec50_molair']]
+df_fingerprints = df_summary_sorted[['master_cpd_id','ec50_mol', 'ec50_molair']]
 molecules = [Chem.MolFromSmiles(smiles) for smiles in df_summary_sorted['cpd_smiles'].tolist()]
 
 ## ECFP Aanmaken
