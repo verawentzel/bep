@@ -19,8 +19,9 @@ df_summary = df_large[[ 'master_cpd_id','apparent_ec50_umol']]
 df_smiles = pd.read_csv(f"{folder}v20.meta.per_compound.txt", sep="\t")
 extracted_col = df_smiles[["master_cpd_id","cpd_smiles"]]
 
-df_all = pd.merge(df_summary, extracted_col, on='master_cpd_id', how='left')
-df_summary_sorted = df_all.sort_values(by=['apparent_ec50_umol'])
+#df_all = pd.merge(df_summary, extracted_col, on='master_cpd_id', how='left')
+#df_summary_sorted = df_all.sort_values(by=['apparent_ec50_umol'])
+df_summary_sorted = pd.merge(df_summary, extracted_col, on='master_cpd_id', how='left')
 
 # Aanmaken Mol Descriptors
 def mol_descriptor(smiles: list[str], scale: bool = True) -> nm.ndarray:
@@ -66,8 +67,9 @@ df_summary_sorted[['TPSA', 'MolLogP', 'MolWt', 'FpDensityMorgan2', 'HeavyAtomMol
                'CalcNumAtoms', 'qed']] = descriptors
 
 df_summary_sorted['ec50_mol'] = df_summary_sorted['apparent_ec50_umol'] / 1000000
+df_summary_sorted['ec50_mol']=df_summary_sorted['ec50_mol'].replace(0, 1e-10)
 df_summary_sorted['ec50_molair'] = df_summary_sorted['ec50_mol']/ df_summary_sorted['MolWt']
-df_summary_sorted['ec50_molair']=df_summary_sorted['ec50_molair'].replace(0, 1e-10)
+#df_summary_sorted['ec50_molair']=df_summary_sorted['ec50_molair'].replace(0, 1e-10)
 df_summary_sorted.to_csv(f"{folder}v20.data.final_summary.txt", sep='\t', index=False)
 
 
