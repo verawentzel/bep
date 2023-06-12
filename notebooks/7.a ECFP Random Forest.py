@@ -19,7 +19,7 @@ complete_df.fillna(complete_df.mean(), inplace=True)
 
 #grenswaarden ec50 aangeven
 complete_df['ec50_mol'] = -nm.log10(complete_df['ec50_mol'])
-condition = (complete_df['ec50_mol'] < 2) | (complete_df['ec50_mol'] > 10)
+condition = (complete_df['ec50_mol'] < 2) | (complete_df['ec50_mol'] > 9)
 complete_df=complete_df[~condition]
 
 #ECFP uitlezen
@@ -32,17 +32,13 @@ for string in complete_df['ECFP']:
 
 #extracting independent and dependent variable
 x=ECFP_list
+
 y = complete_df['ec50_mol'].values
-print('y=', y)
+
 
 #splitting dataset into training and test set
 from sklearn.model_selection import train_test_split
 x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=0.2, random_state=42)
-
-#from sklearn.preprocessing import StandardScaler
-#st_x = StandardScaler()
-#x_train=st_x.fit_transform(x_train)
-#x_test=st_x.transform(x_test)
 
 
 from sklearn.model_selection import RandomizedSearchCV
@@ -61,14 +57,12 @@ random_grid = {'n_estimators': n_estimators,
 # Fitting Decision Tree classifier to the training set | friedman_mse
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.ensemble import RandomForestRegressor
-regressor = GridSearchCV(estimator=RandomForestRegressor(), param_grid=random_grid,cv=5)
-#n_estimators=1024, random_state=42) #nestimators is requorednumber of trees in the trandom forest
-#estimator = RandomForestRegressor(random_state = 42, param_distributions = random_grid, n_iter = 100, cv = 3, verbose=2, n_jobs = -1)
-#regressor = RandomForestRegressor(n_estimators=200, min_samples_split=5,min_samples_leaf=4,max_depth=10,bootstrap=True)
+regressor = RandomForestRegressor(n_estimators=200, min_samples_split=5,min_samples_leaf=4,max_depth=10,bootstrap=True)
 regressor.fit(x_train,y_train)
 
 # Predicting the test result
 y_pred = regressor.predict(x_test)
+print(y_pred)
 
 # Errors berekenen
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
@@ -93,3 +87,4 @@ plt.xlim(1,10)
 plt.ylim(1,10)
 plt.title('Scatterplot with Line of Best Fit (R2 = {:.2f})'.format(r2))
 plt.show()
+

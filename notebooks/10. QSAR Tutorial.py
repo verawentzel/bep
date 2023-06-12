@@ -29,5 +29,15 @@ def rdkit_numpy_convert(fp):
 x = rdkit_numpy_convert(fp)
 print(x.shape)
 
-dataset_balance = sum(y)/len(y)
-print(dataset_balance)
+seed=42
+x_tr, x_ts, y_tr, y_ts = train_test_split(x,y,test_size=0.20, random_state=seed)
+
+cv= StratifiedKFold(n_splits=5, shuffle=True, random_state=seed)
+
+for i, (train_index, test_index) in enumerate(cv.split(x_tr, y_tr)):
+    print("\nFold_" + str(i+1))
+    print("TRAIN:", train_index)
+    print("TEST:", test_index)
+
+scale = StandardScaler().fit(x_tr)
+x_tr = scale.transform(x_tr)

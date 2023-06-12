@@ -72,7 +72,6 @@ df_summary_sorted['ec50_molair'] = df_summary_sorted['ec50_mol']/ df_summary_sor
 #df_summary_sorted['ec50_molair']=df_summary_sorted['ec50_molair'].replace(0, 1e-10)
 df_summary_sorted.to_csv(f"{folder}v20.data.final_summary.txt", sep='\t', index=False)
 
-
 #####################################################################################
 
 # Fingerprint Data Frame aanmaken
