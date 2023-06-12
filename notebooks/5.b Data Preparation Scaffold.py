@@ -3,8 +3,8 @@ import pandas as pd
 from rdkit import Chem
 from rdkit.Chem import AllChem
 import deepchem as dc
-import torch
-import torch_geometric
+import pytorch
+import pytorch_geometric
 import pytorch_lightning
 import jax
 
