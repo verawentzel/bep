@@ -11,8 +11,9 @@ folder = 'C:\\Users\\vswen\\Documents\\1. Biomedische Technologie\\BMT JAAR 5\\K
 complete_df = pd.read_csv(f"{folder}v20.data.fingerprints.txt", sep="\t")
 complete_df.fillna(complete_df.mean(), inplace=True)
 
-complete_df['ec50_mol'] = -nm.log10(complete_df['ec50_mol'])
-condition = (complete_df['ec50_mol'] < 2) | (complete_df['ec50_mol'] > 9)
+complete_df['ec50_mol_transformed'] = -nm.log10(complete_df['ec50_mol'])
+#complete_df['ec50_mol_transformed'] = nm.sqrt(complete_df['ec50_mol_transformed'])
+condition = (complete_df['ec50_mol_transformed'] < 2) | (complete_df['ec50_mol_transformed'] > 9)
 complete_df=complete_df[~condition]
 
 ECFP_string = complete_df['ECFP']
@@ -23,7 +24,7 @@ for string in complete_df['ECFP']:
     ECFP_list.append(ECFP_single_list)
 
 x=ECFP_list
-y = complete_df['ec50_mol'].values
+y = complete_df['ec50_mol_transformed'].values
 
 # Split de gegevens in een trainingset en een testset
 X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
