@@ -3,6 +3,7 @@ from rdkit.Chem import AllChem
 import numpy as nm
 import pandas as pd
 import matplotlib.pyplot as plt
+import random
 
 folder = 'C:\\Users\\vswen\\Documents\\1. Biomedische Technologie\\BMT JAAR 5\\Kwart 4\\4. Data\\CTRPv2.0_2015_ctd2_ExpandedDataset\\'
 
@@ -16,19 +17,32 @@ ecfp = [AllChem.GetMorganFingerprintAsBitVect(molecule,2,nBits=1024) for molecul
 complete_df['ecfp_bit_vectors'] = [[int(bit) for bit in keys.ToBitString()] for keys in ecfp]
 complete_df['ECFP'] = [''.join(str(value) for value in row) for row in complete_df['ecfp_bit_vectors']]
 
-#grenswaarden ec50 aangeven
-#complete_df['y_transformed'] = nm.log10(complete_df['y'])
-#condition = (complete_df['y_transformed'] < 2) | (complete_df['y_transformed'] > 9)
-#complete_df = complete_df[~condition]
-#print(complete_df['y_transformed'].head())
+
+# Data selecteren om een vergelijkbare data grootte te creeeren
+random_indices = random.sample(range(len(complete_df)), 400)
+selected_data = complete_df.iloc[random_indices]
 
 #extracting independent and dependent variable
-x = nm.array(complete_df['ecfp_bit_vectors'].tolist())
-y = complete_df['y'].values
+x = nm.array(selected_data['ecfp_bit_vectors'].tolist()) #Voorheen: complete_df['ecfp_bit_vectors']
+y = selected_data['y'].values #Voorheen: complete_df['y']
 
 #splitting dataset into training and test set
 from sklearn.model_selection import train_test_split
 x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=0.2, random_state=42)
+
+plt.hist(y_train, alpha=0.5, label='y_train')
+plt.xlabel('Waarden Test y')
+plt.ylabel('Frequentie')
+plt.title('Histogram van y_train')
+plt.legend()
+plt.show()
+
+plt.hist(y_test, alpha=0.5, label='y_test')
+plt.xlabel('Waarden Test y')
+plt.ylabel('Frequentie')
+plt.title('Histogram van y_test')
+plt.legend()
+plt.show()
 
 # Fitting Decision Tree classifier to the training set | friedman_mse
 from sklearn.model_selection import RandomizedSearchCV
@@ -38,6 +52,13 @@ regressor.fit(x_train,y_train)
 
 # Predicting the test result
 y_pred = regressor.predict(x_test)
+
+plt.hist(y_pred, alpha=0.5, label='y_pred')
+plt.xlabel('Waarden Test y')
+plt.ylabel('Frequentie')
+plt.title('Histogram van y_pred')
+plt.legend()
+plt.show()
 
 # Errors berekenen
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score

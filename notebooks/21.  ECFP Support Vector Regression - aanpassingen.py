@@ -1,9 +1,10 @@
 import matplotlib.pyplot as plt
 import numpy as nm
-import pandas as pd
 from rdkit import Chem
 from rdkit.Chem import AllChem
-from sklearn.preprocessing import StandardScaler
+import pandas as pd
+from sklearn.svm import SVR
+from sklearn.model_selection import GridSearchCV, train_test_split
 
 folder = 'C:\\Users\\vswen\\Documents\\1. Biomedische Technologie\\BMT JAAR 5\\Kwart 4\\4. Data\\CTRPv2.0_2015_ctd2_ExpandedDataset\\'
 
@@ -21,49 +22,28 @@ complete_df['ec50_mol'] = complete_df['apparent_ec50_umol'] / 1000000
 complete_df['ec50_mol']=complete_df['ec50_mol'].replace(0, 1e-10)
 complete_df['ec50_molair'] = complete_df['ec50_mol']/ complete_df['MolWt']
 
-#grenswaarden ec50 aangeven
+# Grenswaarden aangeven
 complete_df['ec50_molair_transformed'] = -nm.log10(complete_df['ec50_molair'])
-condition = (complete_df['ec50_molair_transformed'] < 0) | (complete_df['ec50_molair_transformed'] >10)
+condition = (complete_df['ec50_molair_transformed'] < 2) | (complete_df['ec50_molair_transformed'] > 9)
 complete_df=complete_df[~condition]
 
-scaler = StandardScaler()
-y_scaled = scaler.fit_transform(complete_df['ec50_molair_transformed'].values.reshape(-1, 1))
-complete_df['y_scaled']= y_scaled.ravel()
-import statistics as stats
-
-q1 = nm.percentile(complete_df['y_scaled'],25)
-q3 = nm.percentile(complete_df['y_scaled'],75)
-iqr = q3 - q1
-ondergrens = q1 - 1.5 * iqr
-bovengrens = q3 + 1.5 * iqr
-
-
-condition = (complete_df['y_scaled'] < ondergrens) | (complete_df['y_scaled'] > bovengrens)
-complete_df=complete_df[~condition]
-
-#extracting independent and dependent variable
 x = nm.array(complete_df['ecfp_bit_vectors'].tolist())
-#y = complete_df['ec50_molair_transformed'].values
-y = complete_df['y_scaled'].values
-print(y)
+y = complete_df['ec50_molair_transformed'].values
 
-#splitting dataset into training and test set
-from sklearn.model_selection import train_test_split
-x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=0.2, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 
 
-# Fitting Decision Tree classifier to the training set | friedman_mse
-from sklearn.model_selection import RandomizedSearchCV
-from sklearn.ensemble import RandomForestRegressor
-#regressor = RandomForestRegressor(n_estimators=200, min_samples_split=5,min_samples_leaf=4,max_depth=10,bootstrap=True)
-regressor = RandomForestRegressor(n_estimators=200, min_samples_split=5,min_samples_leaf=4,max_depth=10,bootstrap=True)
-regressor.fit(x_train,y_train)
+model = SVR(C=1, epsilon=0.1, kernel='rbf')
+model.fit(X_train,y_train)
+y_pred  = model.predict(X_test)
 
-# Predicting the test result
-y_pred = regressor.predict(x_test)
 
-# Errors berekenen
+# Evalueren
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+
+rmse = mean_squared_error(y_test, y_pred, squared=False)
+print("RMSE:", rmse)
+
 mae=mean_absolute_error(y_test, y_pred)
 print('mean absolute error is ', mae)
 
@@ -76,11 +56,14 @@ print('root mean squared error is ', rmse)
 slope, intercept = nm.polyfit(y_test,y_pred,1)
 line = slope * nm.array(y_test)+ intercept
 r2 = r2_score(y_test, y_pred)
+print('r2 is ', r2)
 
+# Visualiseren
 plt.scatter(y_test,y_pred)
 plt.plot(y_test, line, color='red', label='line of current best fit')
 plt.xlabel('y_test')
 plt.ylabel('y_pred')
+plt.xlim(1,10)
+plt.ylim(1,10)
 plt.title('Scatterplot with Line of Best Fit (R2 = {:.2f})'.format(r2))
 plt.show()
-
