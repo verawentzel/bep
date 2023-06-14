@@ -6,7 +6,15 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
+'''ECFP XGBOOST'''
+
+''' Dit is mijn eerdere variant van het model voor
+ECFP XGBoost, hier staat o.a. data preparation
+niet in. De meest up-to-date versie is 31. ECFP 
+XGBoost - aanpassingen'''
+
 folder = 'C:\\Users\\vswen\\Documents\\1. Biomedische Technologie\\BMT JAAR 5\\Kwart 4\\4. Data\\CTRPv2.0_2015_ctd2_ExpandedDataset\\'
+
 
 complete_df = pd.read_csv(f"{folder}v20.data.fingerprints.txt", sep="\t")
 complete_df.fillna(complete_df.mean(), inplace=True)

@@ -2,6 +2,13 @@ import matplotlib.pyplot as plt
 import numpy as nm
 import pandas as pd
 
+'''ECFP RANDOM FOREST'''
+
+''' Dit is mijn eerdere variant van het model voor
+ECFP Random Forest, hier staat o.a. data preparation
+niet in. De meest up-to-date versie is 11. ECFP 
+Random Forest - aanpassingen'''
+
 folder = 'C:\\Users\\vswen\\Documents\\1. Biomedische Technologie\\BMT JAAR 5\\Kwart 4\\4. Data\\CTRPv2.0_2015_ctd2_ExpandedDataset\\'
 
 #importing datasets

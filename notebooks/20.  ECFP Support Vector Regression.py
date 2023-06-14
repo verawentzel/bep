@@ -7,6 +7,13 @@ from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error
 
+'''ECFP SUPPORT VECTOR REGRESSION'''
+
+''' Dit is mijn eerdere variant van het model voor
+ECFP Support Vector Regression, hier staat o.a. data
+preparation niet in. De meest up-to-date versie is 21. ECFP 
+Support Vector Regression - aanpassingen'''
+
 folder = 'C:\\Users\\vswen\\Documents\\1. Biomedische Technologie\\BMT JAAR 5\\Kwart 4\\4. Data\\CTRPv2.0_2015_ctd2_ExpandedDataset\\'
 
 #importing datasets
