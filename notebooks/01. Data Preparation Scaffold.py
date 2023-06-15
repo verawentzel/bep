@@ -8,7 +8,6 @@ from rdkit.ML.Cluster import Butina
 from rdkit.Chem import Draw
 from rdkit.Chem.Scaffolds import MurckoScaffold
 
-
 # Import online Data Frame
 folder = 'C:\\Users\\vswen\\Documents\\1. Biomedische Technologie\\BMT JAAR 5\\Kwart 4\\4. Data\\CTRPv2.0_2015_ctd2_ExpandedDataset\\'
 
