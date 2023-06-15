@@ -36,18 +36,6 @@ y = complete_df['transformed_ec50_mol'].values
 
 X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 
-# Optimale grid SVR via CV
-#svr = SVR()
-#parameters = {
- #   'C': [0.1, 1, 10],
-  #  'epsilon': [0.01, 0.1, 1],
-   # 'kernel': ['linear', 'rbf']
-#}
-
-#model=GridSearchCV(svr,parameters, cv=5)
-#model.fit(X_train, y_train)
-
-
 # Toepassen optimale grid
 model = SVR(C=1, epsilon=0.1, kernel='rbf')
 model.fit(X_train,y_train)

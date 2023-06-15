@@ -2,7 +2,6 @@ import matplotlib.pyplot as plt
 import numpy as nm
 import pandas as pd
 import xgboost as xgb
-from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
@@ -48,18 +47,10 @@ param_grid = {
     'colsample_bytree': [0.8, 1.0],
 }
 
-# Optimale grid via CV
-#grid_search = GridSearchCV(model, param_grid, scoring='neg_mean_squared_error', cv=5)
-#grid_search.fit(X_train,y_train)
-
 # Toepassen optimale grid
 grid = xgb.XGBRegressor(colsample_bytree= 0.8, learning_rate= 0.01, max_depth= 3, n_estimators= 500, subsample= 0.8)
 grid.fit(X_train,y_train)
 y_pred=grid.predict(X_test)
-
-# (Oud) voor de optimale grid
-#model.fit(X_train, y_train)
-#y_pred = model.predict(X_test)
 
 # Evaluatie
 mae = mean_absolute_error(y_test, y_pred)
