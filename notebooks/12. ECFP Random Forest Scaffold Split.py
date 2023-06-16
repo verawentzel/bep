@@ -4,7 +4,6 @@ import pandas as pd
 import math
 from rdkit import Chem
 from rdkit.Chem import AllChem
-from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 '''ECFP RANDOM FOREST'''
@@ -16,7 +15,7 @@ heb op de uiteindelijke cellijn.'''
 folder = 'C:\\Users\\vswen\\Documents\\1. Biomedische Technologie\\BMT JAAR 5\\Kwart 4\\4. Data\\CTRPv2.0_2015_ctd2_ExpandedDataset\\'
 
 # Import data
-complete_df = pd.read_csv(f"{folder}scaffold_split.txt", sep="\t")
+complete_df = pd.read_csv(f"{folder}v20.data.fingerprints.txt.txt", sep="\t")
 complete_df.fillna(complete_df.mean(), inplace=True)
 
 # Fingerprint aanmaken
@@ -33,31 +32,30 @@ complete_df['ec50_molair_transformed'] = -nm.log10(complete_df['ec50_molair'])
 condition = (complete_df['ec50_molair_transformed'] < 1 ) | (complete_df['ec50_molair_transformed'] > 10)
 complete_df=complete_df[~condition]
 
+# Scaler
+## Wordt op dit moment niet gebruikt
+scaler = StandardScaler()
+y_scaled = scaler.fit_transform(complete_df['ec50_molair_transformed'].values.reshape(-1, 1))
+complete_df['y_scaled']= y_scaled.ravel()
+
+# Boundary o.b.v. IQR
+## Wordt op dit moment niet gebruikt
+q1 = nm.percentile(complete_df['y_scaled'],25)
+q3 = nm.percentile(complete_df['y_scaled'],75)
+iqr = q3 - q1
+ondergrens = q1 - 1.5 * iqr
+bovengrens = q3 + 1.5 * iqr
+condition = (complete_df['y_scaled'] < ondergrens) | (complete_df['y_scaled'] > bovengrens)
+complete_df=complete_df[~condition]
+
 # Dependent & Independent variable
 x = nm.array(complete_df['ecfp_bit_vectors'].tolist())
 y = complete_df['ec50_molair_transformed'].values
-z = complete_df['recurring_scaffold'].values
 print(y)
 
-from sklearn.model_selection import GroupShuffleSplit
-
-def custom_train_test_split(x, y, z, test_size=0.2, random_state=42):
-    groups = z.copy()  # Maak een kopie van de z-waarden als groepen
-    groups[z == 0] = 'random'  # Groepeer de rijen met waarde 0 als 'random'
-
-    gss = GroupShuffleSplit(n_splits=1, test_size=test_size, random_state=random_state)
-    train_indices, test_indices = next(gss.split(x, y, groups=groups))
-
-    x_train, x_test = x[train_indices], x[test_indices]
-    y_train, y_test = y[train_indices], y[test_indices]
-
-    return x_train, x_test, y_train, y_test
-
-# Voorbeeldgebruik:
-x_train, x_test, y_train, y_test = custom_train_test_split(x, y, z, test_size=0.2, random_state=42)
-
 # Split Test & Train
-#x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=0.2, random_state=42)
+from sklearn.model_selection import train_test_split
+x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=0.2, random_state=42)
 
 # Visualisatie y_train ## Vooral voor eigen begrip
 plt.hist(y_train, alpha=0.5, label='y_train')
