@@ -13,18 +13,23 @@ from rdkit.Chem import MACCSkeys
 folder = 'C:\\Users\\vswen\\Documents\\1. Biomedische Technologie\\BMT JAAR 5\\Kwart 4\\4. Data\\CTRPv2.0_2015_ctd2_ExpandedDataset\\'
 
 # Dataframe met kernwaarden aanmaken
-df_large = pd.read_csv(f"{folder}v20.data.curves_post_qc_419.txt", sep='\t')
+df_large = pd.read_csv(f"{folder}v20.data.curves_post_qc.txt", sep='\t')
+
+# Experiment_id aangeven van de te onderzoeken cellijn
+## In Kahler onderzoek zijn de mogelijke cellijnen:
+## exp. 419 | exp. 305 | exp. 538 | exp. 263 | exp. 260
+experiment_id = 260
+
+
+df_large=df_large[df_large['experiment_id'] == experiment_id]
 df_summary = df_large[[ 'master_cpd_id','apparent_ec50_umol']]
 
 df_smiles = pd.read_csv(f"{folder}v20.meta.per_compound.txt", sep="\t")
 extracted_col = df_smiles[["master_cpd_id","cpd_smiles"]]
-
-#df_all = pd.merge(df_summary, extracted_col, on='master_cpd_id', how='left')
-#df_summary_sorted = df_all.sort_values(by=['apparent_ec50_umol'])
 df_summary_sorted = pd.merge(df_summary, extracted_col, on='master_cpd_id', how='left')
 
 # Aanmaken Mol Descriptors
-def mol_descriptor(smiles: list[str], scale: bool = True) -> nm.ndarray:
+def mol_descriptor(smiles: list, scale: bool = True) -> nm.ndarray:
     X = []
     for smi in tqdm(smiles):
         m = Chem.MolFromSmiles(smi)
@@ -69,30 +74,29 @@ df_summary_sorted[['TPSA', 'MolLogP', 'MolWt', 'FpDensityMorgan2', 'HeavyAtomMol
 df_summary_sorted['ec50_mol'] = df_summary_sorted['apparent_ec50_umol'] / 1000000
 df_summary_sorted['ec50_mol']=df_summary_sorted['ec50_mol'].replace(0, 1e-10)
 df_summary_sorted['ec50_molair'] = df_summary_sorted['ec50_mol']/ df_summary_sorted['MolWt']
-#df_summary_sorted['ec50_molair']=df_summary_sorted['ec50_molair'].replace(0, 1e-10)
-df_summary_sorted.to_csv(f"{folder}v20.data.final_summary.txt", sep='\t', index=False)
+df_summary_sorted.to_csv(f"{folder}v20.data.final_summary_{experiment_id}.txt", sep='\t', index=False)
 
 #####################################################################################
 
 # Fingerprint Data Frame aanmaken
-df_fingerprints = df_summary_sorted[['master_cpd_id','ec50_mol', 'ec50_molair']]
-molecules = [Chem.MolFromSmiles(smiles) for smiles in df_summary_sorted['cpd_smiles'].tolist()]
+#df_fingerprints = df_summary_sorted[['master_cpd_id','ec50_mol', 'ec50_molair']]
+#molecules = [Chem.MolFromSmiles(smiles) for smiles in df_summary_sorted['cpd_smiles'].tolist()]
 
 ## ECFP Aanmaken
-ecfp = [AllChem.GetMorganFingerprintAsBitVect(molecule,2,nBits=1024) for molecule in molecules]
-ecfp_bit_vectors = [[int(bit) for bit in keys.ToBitString()] for keys in ecfp]
-df_fingerprints['ECFP'] = ecfp_bit_vectors
-df_fingerprints.to_csv(f"{folder}v20.data.fingerprints.txt", sep='\t', index=False)
+#ecfp = [AllChem.GetMorganFingerprintAsBitVect(molecule,2,nBits=1024) for molecule in molecules]
+#ecfp_bit_vectors = [[int(bit) for bit in keys.ToBitString()] for keys in ecfp]
+#df_fingerprints['ECFP'] = ecfp_bit_vectors
+#df_fingerprints.to_csv(f"{folder}v20.data.fingerprints.txt", sep='\t', index=False)
 
 ## MACCS key Aanmaken
-maccs_keys = [MACCSkeys.GenMACCSKeys(molecule) for molecule in molecules]
-maccs_bit_vectors = [[int(bit) for bit in keys.ToBitString()] for keys in maccs_keys]
-df_fingerprints['MACCS Keys'] = maccs_bit_vectors
+#maccs_keys = [MACCSkeys.GenMACCSKeys(molecule) for molecule in molecules]
+#maccs_bit_vectors = [[int(bit) for bit in keys.ToBitString()] for keys in maccs_keys]
+#df_fingerprints['MACCS Keys'] = maccs_bit_vectors
 
 ## Conjoint key aanmaken
-def combine_lists(row):
-    return row['ECFP'] + row['MACCS Keys']
-df_fingerprints['Conjoint Keys']= df_fingerprints.apply(combine_lists, axis=1)
-df_fingerprints.to_csv(f"{folder}v20.data.fingerprints.txt", sep='\t', index=False)
+#def combine_lists(row):
+#    return row['ECFP'] + row['MACCS Keys']
+#df_fingerprints['Conjoint Keys']= df_fingerprints.apply(combine_lists, axis=1)
+#df_fingerprints.to_csv(f"{folder}v20.data.fingerprints.txt", sep='\t', index=False)
 
 #####################################################################################

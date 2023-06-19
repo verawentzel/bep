@@ -52,13 +52,17 @@ rows=[]
 symbol_mapping = {}  # Scaffold symbool dictionary
 symbol_counter = 0  # Aantal unieke scaffolds
 
+symbol_counter = 0
+symbol_mapping = {}
+rows = []
+
 for i, compound in enumerate(smiles_list):
     scaffold = scaffold_smiles[i]
 
     if scaffold in locations_similar_scaffolds:
         if scaffold not in symbol_mapping:
             symbol_counter += 1
-            symbol_mapping[scaffold] = chr(64 + symbol_counter)
+            symbol_mapping[scaffold] = symbol_counter
 
         recurring_symbol = symbol_mapping[scaffold]
         recurring = True
@@ -74,5 +78,7 @@ df_scaffolds_grouped = pd.DataFrame(rows, columns=['cpd_smiles', 'spd_scaffold',
 df_scaffolds_grouped.insert(0,'apparent_ec50_umol',df_scaffold_split['apparent_ec50_umol'])
 df_scaffolds_grouped.insert(1,'MolWt',df_scaffold_split['MolWt'])
 
-df_scaffolds_grouped.to_csv(f"{folder}scaffold_split.txt", sep='\t', index=False)
+df_scaffolds_grouped_sorted = df_scaffolds_grouped.sort_values('recurring_scaffold', ascending=False)
+
+df_scaffolds_grouped_sorted.to_csv(f"{folder}scaffold_split.txt", sep='\t', index=False)
 

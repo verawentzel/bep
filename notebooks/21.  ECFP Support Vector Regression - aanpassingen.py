@@ -16,7 +16,7 @@ toegepast heb op de uiteindelijke cellijn.'''
 folder = 'C:\\Users\\vswen\\Documents\\1. Biomedische Technologie\\BMT JAAR 5\\Kwart 4\\4. Data\\CTRPv2.0_2015_ctd2_ExpandedDataset\\'
 
 # Import data
-complete_df = pd.read_csv(f"{folder}v20.data.final_summary.txt", sep="\t")
+complete_df = pd.read_csv(f"{folder}v20.data.final_summary_260.txt", sep="\t")
 complete_df.fillna(complete_df.mean(), inplace=True)
 
 # Fingerprint aanmaken

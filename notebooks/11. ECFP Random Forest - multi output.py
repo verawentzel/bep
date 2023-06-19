@@ -4,38 +4,48 @@ import pandas as pd
 import math
 from rdkit import Chem
 from rdkit.Chem import AllChem
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
 
-'''ECFP RANDOM FOREST'''
-
-''' Dit is het bestand voor het laatste, meest up-to-date
-ECFP random forest model dat ik heb gemaakt en toegepast
-heb op de uiteindelijke cellijn.'''
 
 folder = 'C:\\Users\\vswen\\Documents\\1. Biomedische Technologie\\BMT JAAR 5\\Kwart 4\\4. Data\\CTRPv2.0_2015_ctd2_ExpandedDataset\\'
 
 # Import data
-complete_df = pd.read_csv(f"{folder}v20.data.final_summary_260.txt", sep="\t")
-complete_df.fillna(complete_df.mean(), inplace=True)
+complete_df_263 = pd.read_csv(f"{folder}v20.data.final_summary_263.txt", sep="\t")
+complete_df_263.fillna(complete_df_263.mean(), inplace=True)
+
+complete_df_419 = pd.read_csv(f"{folder}v20.data.final_summary_419.txt", sep="\t")
+complete_df_419.fillna(complete_df_419.mean(), inplace=True)
 
 # Fingerprint aanmaken
-molecules = [Chem.MolFromSmiles(smile) for smile in complete_df['cpd_smiles'].tolist()]
+molecules = [Chem.MolFromSmiles(smile) for smile in complete_df_263['cpd_smiles'].tolist()]
 ecfp = [AllChem.GetMorganFingerprintAsBitVect(molecule,2,nBits=1024) for molecule in molecules]
-complete_df['ecfp_bit_vectors'] = [[int(bit) for bit in keys.ToBitString()] for keys in ecfp]
-complete_df['ECFP'] = [''.join(str(value) for value in row) for row in complete_df['ecfp_bit_vectors']]
+complete_df_263['ecfp_bit_vectors'] = [[int(bit) for bit in keys.ToBitString()] for keys in ecfp]
+complete_df_263['ECFP'] = [''.join(str(value) for value in row) for row in complete_df_263['ecfp_bit_vectors']]
 
 # Doelvariabele transformeren & limieten stellen dataframe
-complete_df['ec50_mol'] = complete_df['apparent_ec50_umol'] / 1000000
-complete_df['ec50_mol']=complete_df['ec50_mol'].replace(0, 1e-10)
-complete_df['ec50_molair'] = complete_df['ec50_mol']/ complete_df['MolWt']
-complete_df['ec50_molair_transformed'] = -nm.log10(complete_df['ec50_molair'])
-condition = (complete_df['ec50_molair_transformed'] < 2 ) | (complete_df['ec50_molair_transformed'] > 10)  # Vraag waarom en wat de grenzen zijn
-complete_df=complete_df[~condition]
+complete_df_263['ec50_mol'] = complete_df_263['apparent_ec50_umol'] / 1000000
+complete_df_263['ec50_mol']=complete_df_263['ec50_mol'].replace(0, 1e-10)
+complete_df_263['ec50_molair'] = complete_df_263['ec50_mol']/ complete_df_263['MolWt']
+complete_df_263['ec50_molair_transformed_263'] = -nm.log10(complete_df_263['ec50_molair'])
+condition = (complete_df_263['ec50_molair_transformed_263'] < 4 ) | (complete_df_263['ec50_molair_transformed_263'] > 10)  # Vraag waarom en wat de grenzen zijn
+complete_df_263=complete_df_263[~condition]
+
+# Doelvariabele transformeren & limieten stellen dataframe
+complete_df_419['ec50_mol'] = complete_df_419['apparent_ec50_umol'] / 1000000
+complete_df_419['ec50_mol']=complete_df_419['ec50_mol'].replace(0, 1e-10)
+complete_df_419['ec50_molair'] = complete_df_419['ec50_mol']/ complete_df_419['MolWt']
+complete_df_419['ec50_molair_transformed_419'] = -nm.log10(complete_df_419['ec50_molair'])
+condition = (complete_df_419['ec50_molair_transformed_419'] < 4 ) | (complete_df_419['ec50_molair_transformed_419'] > 10)  # Vraag waarom en wat de grenzen zijn
+complete_df_419=complete_df_419[~condition]
+
+extracted_col_419 = complete_df_419[["master_cpd_id","ec50_molair_transformed_419"]]
+df_summary_sorted = pd.merge(complete_df_263, extracted_col_419, on='master_cpd_id', how='left')
 
 # Dependent & Independent variable
-x = nm.array(complete_df['ecfp_bit_vectors'].tolist())
-y = complete_df['ec50_molair_transformed'].values
+x = nm.array(df_summary_sorted['ecfp_bit_vectors'].tolist())
+
+y_pivot = df_summary_sorted.pivot(index='master_cpd_id', columns=['ec50_molair_transformed_263', 'ec50_molair_transformed_419'])
+y_pivot = y_pivot.dropna()
+y = y_pivot.values
 
 # Split Test & Train
 from sklearn.model_selection import train_test_split
@@ -103,7 +113,7 @@ line = slope * nm.array(y_test)+ intercept
 r2 = r2_score(y_test, y_pred)
 print('r2 is', r2)
 
-# R2 Visualisatie                                              
+# R2 Visualisatie
 plt.scatter(y_test,y_pred)
 plt.plot(y_test, line, color='red', label='line of current best fit')
 plt.xlabel('y_test')
