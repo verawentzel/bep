@@ -33,7 +33,7 @@ complete_df['ec50_mol'] = complete_df['apparent_ec50_umol'] / 1000000
 complete_df['ec50_mol']=complete_df['ec50_mol'].replace(0, 1e-10)
 complete_df['ec50_molair'] = complete_df['ec50_mol']/ complete_df['MolWt']
 complete_df['ec50_molair_transformed'] = -nm.log10(complete_df['ec50_molair'])
-condition = (complete_df['ec50_molair_transformed'] < 2) | (complete_df['ec50_molair_transformed'] > 9)
+condition = (complete_df['ec50_molair_transformed'] < 2) | (complete_df['ec50_molair_transformed'] > 10)
 complete_df=complete_df[~condition]
 
 # Dependent & Independent variable
@@ -85,10 +85,10 @@ plt.title('Scatterplot with Line of Best Fit (R2 = {:.2f})'.format(r2))
 plt.show()
 
 # Visualisatie residu plot
-residuals = y_test - y_pred
-plt.scatter(y_pred, residuals)
-plt.xlabel('Voorspelde waarden')
-plt.ylabel('Residuen')
-plt.title('Residu plot')
-plt.axhline(y=0, color='r', linestyle='--')
-plt.show()
+#residuals = y_test - y_pred
+#plt.scatter(y_pred, residuals)
+#plt.xlabel('Voorspelde waarden')
+#plt.ylabel('Residuen')
+#plt.title('Residu plot')
+#plt.axhline(y=0, color='r', linestyle='--')
+#plt.show()

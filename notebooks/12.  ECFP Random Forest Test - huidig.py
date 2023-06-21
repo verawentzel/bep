@@ -33,6 +33,9 @@ selected_data = complete_df.iloc[random_indices]
 x = nm.array(selected_data['ecfp_bit_vectors'].tolist()) #Voorheen: complete_df['ecfp_bit_vectors']
 y = selected_data['y'].values #Voorheen: complete_df['y']
 
+#x = nm.array(complete_df['ecfp_bit_vectors'].tolist()) #Voorheen: complete_df['ecfp_bit_vectors']
+#y = complete_df['y'].values #Voorheen: complete_df['y']
+
 # Split Test & Train
 from sklearn.model_selection import train_test_split
 x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=0.2, random_state=42)

@@ -67,12 +67,12 @@ plt.show()
 # Fit Regressor
 ## Momenteel o.b.v. hyperparameters die in een oude versie van het model zijn berekend
 from sklearn.model_selection import RandomizedSearchCV
-from sklearn.ensemble import RandomForestRegressor
-regressor = RandomForestRegressor(n_estimators=200, min_samples_split=5,min_samples_leaf=4,max_depth=10,bootstrap=True)
-regressor.fit(x_train,y_train)
+#from sklearn.ensemble import RandomForestRegressor
+#regressor = RandomForestRegressor(n_estimators=200, min_samples_split=5,min_samples_leaf=4,max_depth=10,bootstrap=True)
+#regressor.fit(x_train,y_train)
 
 # Predict Test result
-y_pred = regressor.predict(x_test)
+#y_pred = regressor.predict(x_test)
 
 # Visualisatie y_pred ## Vooral voor eigen begrip
 plt.hist(y_pred, alpha=0.5, label='y_pred')
@@ -108,6 +108,8 @@ plt.scatter(y_test,y_pred)
 plt.plot(y_test, line, color='red', label='line of current best fit')
 plt.xlabel('y_test')
 plt.ylabel('y_pred')
+plt.xlim(1,10)
+plt.ylim(1,10)
 plt.title('Scatterplot with Line of Best Fit (R2 = {:.2f})'.format(r2))
 plt.show()
 

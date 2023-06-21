@@ -29,12 +29,17 @@ complete_df['ecfp_bit_vectors'] = [[int(bit) for bit in keys.ToBitString()] for 
 complete_df['ECFP'] = [''.join(str(value) for value in row) for row in complete_df['ecfp_bit_vectors']]
 
 # Data selecteren om een vergelijkbare data grootte te creeeren
-random_indices = random.sample(range(len(complete_df)), 400)
-selected_data = complete_df.iloc[random_indices]
+#random_indices = random.sample(range(len(complete_df)), 400)
+#selected_data = complete_df.iloc[random_indices]
 
 # Dependent & Independent variable
-x = nm.array(selected_data['ecfp_bit_vectors'].tolist()) #Voorheen: complete_df['ecfp_bit_vectors']
-y = selected_data['y'].values #Voorheen: complete_df['y']
+#x = nm.array(selected_data['ecfp_bit_vectors'].tolist()) #Voorheen: complete_df['ecfp_bit_vectors']
+#y = selected_data['y'].values #Voorheen: complete_df['y']
+
+x = nm.array(complete_df['ecfp_bit_vectors'].tolist()) #Voorheen: complete_df['ecfp_bit_vectors']
+y = complete_df['y'].values #Voorheen: complete_df['y']
+
+
 
 # Split Test & Train
 X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
