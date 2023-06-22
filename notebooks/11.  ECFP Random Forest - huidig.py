@@ -113,3 +113,14 @@ plt.ylim(1,10)
 plt.title('Scatterplot with Line of Best Fit (R2 = {:.2f})'.format(r2))
 plt.show()
 
+residuen = y_test - y_pred
+plt.violinplot(residuen, showmedians=True)
+iqr = nm.percentile(residuen, 75) - nm.percentile(residuen, 25)
+plt.axhline(y=nm.percentile(residuen, 25), color='green', linestyle='--', label='25th Percentile')
+plt.axhline(y=nm.percentile(residuen, 75), color='green', linestyle='--', label='75th Percentile')
+plt.axhline(y=nm.percentile(residuen, 25) - 1.5 * iqr, color='orange', linestyle='--', label='1.5*IQR Range')
+plt.axhline(y=nm.percentile(residuen, 75) + 1.5 * iqr, color='orange', linestyle='--')
+
+
+# Toon de plot
+plt.show()
