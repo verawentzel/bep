@@ -33,7 +33,7 @@ complete_df['ec50_mol'] = complete_df['apparent_ec50_umol'] / 1000000
 complete_df['ec50_mol']=complete_df['ec50_mol'].replace(0, 1e-10)
 complete_df['ec50_molair'] = complete_df['ec50_mol']/ complete_df['MolWt']
 complete_df['ec50_molair_transformed'] = -nm.log10(complete_df['ec50_molair'])
-condition = (complete_df['ec50_molair_transformed'] < 2) | (complete_df['ec50_molair_transformed'] > 10)
+condition = (complete_df['ec50_molair_transformed'] < 2) | (complete_df['ec50_molair_transformed'] > 8)
 complete_df=complete_df[~condition]
 
 # Dependent & Independent variable

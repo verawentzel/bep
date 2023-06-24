@@ -12,7 +12,7 @@ Random Forest - aanpassingen'''
 folder = 'C:\\Users\\vswen\\Documents\\1. Biomedische Technologie\\BMT JAAR 5\\Kwart 4\\4. Data\\CTRPv2.0_2015_ctd2_ExpandedDataset\\'
 
 #importing datasets
-complete_df = pd.read_csv(f"{folder}v20.data.fingerprints.txt", sep="\t")
+complete_df = pd.read_csv(f"{folder}v20.data.final_summary_419.txt", sep="\t")
 complete_df.fillna(complete_df.mean(), inplace=True)
 
 #grenswaarden ec50 aangeven
@@ -20,16 +20,7 @@ complete_df['ec50_mol'] = -nm.log10(complete_df['ec50_mol'])
 condition = (complete_df['ec50_mol'] < 2) | (complete_df['ec50_mol'] > 9)
 complete_df=complete_df[~condition]
 
-#ECFP uitlezen
-ECFP_string = complete_df['ECFP']
-ECFP_list = []
-import ast
-for string in complete_df['ECFP']:
-    ECFP_single_list = ast.literal_eval(string)
-    ECFP_list.append(ECFP_single_list)
-
-#extracting independent and dependent variable
-x=ECFP_list
+x =  complete_df['TPSA','MolLogP','MolWt','FpDensityMorgan2', 'HeavyAtomMolWt','MaxPartialCharge', 'MinPartialCharge', 'NumRadicalElectrons', 'NumValenceElectrons', 'CalcFractionCSP3', 'CalcNumRings', 'CalcNumRotatableBonds', 'CalcNumLipinskiHBD', 'CalcNumLipinskiHBA', 'CalcNumHeterocycles', 'CalcNumHeavyAtoms', 'CalcNumAromaticRings', 'CalcNumAtoms', 'qed']
 y = complete_df['ec50_mol'].values
 
 

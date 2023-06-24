@@ -25,16 +25,71 @@ ecfp = [AllChem.GetMorganFingerprintAsBitVect(molecule,2,nBits=1024) for molecul
 complete_df['ecfp_bit_vectors'] = [[int(bit) for bit in keys.ToBitString()] for keys in ecfp]
 complete_df['ECFP'] = [''.join(str(value) for value in row) for row in complete_df['ecfp_bit_vectors']]
 
+# Adding moldescriptors to the Morgan Fingerprint
+import numpy as np
+from tqdm.auto import tqdm
+from rdkit.Chem.QED import qed
+from rdkit.Chem import Descriptors, rdMolDescriptors
+from sklearn import preprocessing as pre
+
+
+def mol_descriptor(smiles: list[str], scale: bool = True) -> np.ndarray:
+    descriptors_list=[]
+    for smi in tqdm(smiles):
+
+        m = Chem.MolFromSmiles(smi)
+        descriptors = np.array([Descriptors.TPSA(m),
+                  Descriptors.MolLogP(m),
+                  Descriptors.MolWt(m),
+                  Descriptors.FpDensityMorgan2(m),
+                  Descriptors.HeavyAtomMolWt(m),
+                  Descriptors.MaxPartialCharge(m),
+                  Descriptors.MinPartialCharge(m),
+                  Descriptors.NumRadicalElectrons(m),
+                  Descriptors.NumValenceElectrons(m),
+                  rdMolDescriptors.CalcFractionCSP3(m),
+                  rdMolDescriptors.CalcNumRings(m),
+                  rdMolDescriptors.CalcNumRotatableBonds(m),
+                  rdMolDescriptors.CalcNumLipinskiHBD(m),
+                  rdMolDescriptors.CalcNumLipinskiHBA(m),
+                  rdMolDescriptors.CalcNumHeterocycles(m),
+                  rdMolDescriptors.CalcNumHeavyAtoms(m),
+                  rdMolDescriptors.CalcNumAromaticRings(m),
+                  rdMolDescriptors.CalcNumAtoms(m),
+                  qed(m)])
+        descriptors.append(descriptors)
+
+    if scale:
+        descriptors_list = pre.MinMaxScaler().fit_transform(np.array(descriptors_list))
+    else:
+        return np.array(descriptors_list)
+
+descriptors_list = mol_descriptor(complete_df['cpd_smiles'])
+
+complete_df[['TPSA', 'MolLogP', 'MolWt', 'FpDensityMorgan2', 'HeavyAtomMolWt',
+           'MaxPartialCharge', 'MinPartialCharge', 'NumRadicalElectrons',
+           'NumValenceElectrons', 'CalcFractionCSP3', 'CalcNumRings',
+           'CalcNumRotatableBonds', 'CalcNumLipinskiHBD', 'CalcNumLipinskiHBA',
+           'CalcNumHeterocycles', 'CalcNumHeavyAtoms', 'CalcNumAromaticRings',
+           'CalcNumAtoms', 'qed']] = descriptors_list
+
+
 # Doelvariabele transformeren & limieten stellen dataframe
 complete_df['ec50_mol'] = complete_df['apparent_ec50_umol'] / 1000000
 complete_df['ec50_mol']=complete_df['ec50_mol'].replace(0, 1e-10)
 complete_df['ec50_molair'] = complete_df['ec50_mol']/ complete_df['MolWt']
 complete_df['ec50_molair_transformed'] = -nm.log10(complete_df['ec50_molair'])
-condition = (complete_df['ec50_molair_transformed'] < 2 ) | (complete_df['ec50_molair_transformed'] > 10)  # Vraag waarom en wat de grenzen zijn
+condition = (complete_df['ec50_molair_transformed'] < 2 ) | (complete_df['ec50_molair_transformed'] > 8)  # Vraag waarom en wat de grenzen zijn
 complete_df=complete_df[~condition]
 
 # Dependent & Independent variable
-x = nm.array(complete_df['ecfp_bit_vectors'].tolist())
+#x = nm.array(complete_df['ecfp_bit_vectors'].tolist())
+x= complete_df[['TPSA', 'MolLogP', 'MolWt', 'FpDensityMorgan2', 'HeavyAtomMolWt',
+               'MaxPartialCharge', 'MinPartialCharge', 'NumRadicalElectrons',
+               'NumValenceElectrons', 'CalcFractionCSP3', 'CalcNumRings',
+               'CalcNumRotatableBonds', 'CalcNumLipinskiHBD', 'CalcNumLipinskiHBA',
+               'CalcNumHeterocycles', 'CalcNumHeavyAtoms', 'CalcNumAromaticRings',
+               'CalcNumAtoms', 'qed']]
 y = complete_df['ec50_molair_transformed'].values
 
 # Split Test & Train

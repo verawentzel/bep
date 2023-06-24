@@ -89,10 +89,10 @@ size_train_set = total_length_compounds * 0.8 # Uitgaande van idealiter een 0.8:
 # Import data
 complete_df = pd.read_csv(f"{folder}scaffold_split_test.txt", sep="\t")
 
-#import random
+import random
 # Data selecteren om een vergelijkbare data grootte te creeeren
-#random_indices = random.sample(range(len(complete_df)), 379)
-#complete_df = complete_df.iloc[random_indices]
+random_indices = random.sample(range(len(complete_df)), 379)
+complete_df = complete_df.iloc[random_indices]
 
 complete_df['ecfp_bit_vectors'] = complete_df['ecfp_bit_vectors'].apply(lambda x: [int(i) for i in x])
 

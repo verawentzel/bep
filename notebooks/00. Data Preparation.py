@@ -18,7 +18,7 @@ df_large = pd.read_csv(f"{folder}v20.data.curves_post_qc.txt", sep='\t')
 # Experiment_id aangeven van de te onderzoeken cellijn
 ## In Kahler onderzoek zijn de mogelijke cellijnen:
 ## exp. 419 | exp. 305 | exp. 538 | exp. 263 | exp. 260
-experiment_id = 260
+experiment_id = 419
 
 
 df_large=df_large[df_large['experiment_id'] == experiment_id]
