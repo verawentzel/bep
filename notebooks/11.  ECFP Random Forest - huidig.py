@@ -31,47 +31,54 @@ from tqdm.auto import tqdm
 from rdkit.Chem.QED import qed
 from rdkit.Chem import Descriptors, rdMolDescriptors
 from sklearn import preprocessing as pre
+from typing import List
 
 
-def mol_descriptor(smiles: list[str], scale: bool = True) -> np.ndarray:
-    descriptors_list=[]
+def mol_descriptor(smiles: List[str], scale: bool = True) -> nm.ndarray:
+    X = []
     for smi in tqdm(smiles):
-
         m = Chem.MolFromSmiles(smi)
-        descriptors = np.array([Descriptors.TPSA(m),
-                  Descriptors.MolLogP(m),
-                  Descriptors.MolWt(m),
-                  Descriptors.FpDensityMorgan2(m),
-                  Descriptors.HeavyAtomMolWt(m),
-                  Descriptors.MaxPartialCharge(m),
-                  Descriptors.MinPartialCharge(m),
-                  Descriptors.NumRadicalElectrons(m),
-                  Descriptors.NumValenceElectrons(m),
-                  rdMolDescriptors.CalcFractionCSP3(m),
-                  rdMolDescriptors.CalcNumRings(m),
-                  rdMolDescriptors.CalcNumRotatableBonds(m),
-                  rdMolDescriptors.CalcNumLipinskiHBD(m),
-                  rdMolDescriptors.CalcNumLipinskiHBA(m),
-                  rdMolDescriptors.CalcNumHeterocycles(m),
-                  rdMolDescriptors.CalcNumHeavyAtoms(m),
-                  rdMolDescriptors.CalcNumAromaticRings(m),
-                  rdMolDescriptors.CalcNumAtoms(m),
-                  qed(m)])
-        descriptors.append(descriptors)
+        x = nm.array([Descriptors.TPSA(m),
+                      Descriptors.MolLogP(m),
+                      Descriptors.MolWt(m),
+                      Descriptors.FpDensityMorgan2(m),
+                      Descriptors.HeavyAtomMolWt(m),
+                      Descriptors.MaxPartialCharge(m),
+                      Descriptors.MinPartialCharge(m),
+                      Descriptors.NumRadicalElectrons(m),
+                      Descriptors.NumValenceElectrons(m),
+                      rdMolDescriptors.CalcFractionCSP3(m),
+                      rdMolDescriptors.CalcNumRings(m),
+                      rdMolDescriptors.CalcNumRotatableBonds(m),
+                      rdMolDescriptors.CalcNumLipinskiHBD(m),
+                      rdMolDescriptors.CalcNumLipinskiHBA(m),
+                      rdMolDescriptors.CalcNumHeterocycles(m),
+                      rdMolDescriptors.CalcNumHeavyAtoms(m),
+                      rdMolDescriptors.CalcNumAromaticRings(m),
+                      rdMolDescriptors.CalcNumAtoms(m),
+                      qed(m)])
+        X.append(x)
 
     if scale:
-        descriptors_list = pre.MinMaxScaler().fit_transform(np.array(descriptors_list))
-    else:
-        return np.array(descriptors_list)
+        return pre.MinMaxScaler().fit_transform(nm.array(X))
 
-descriptors_list = mol_descriptor(complete_df['cpd_smiles'])
+    return nm.array(X)
 
+
+smiles_column = complete_df['cpd_smiles']
+
+# Call the mol_descriptor function with the 'cpd_smiles' values
+descriptors = mol_descriptor(smiles_column)
+print(descriptors)
+
+# Add the descriptors to your existing DataFrame
 complete_df[['TPSA', 'MolLogP', 'MolWt', 'FpDensityMorgan2', 'HeavyAtomMolWt',
-           'MaxPartialCharge', 'MinPartialCharge', 'NumRadicalElectrons',
-           'NumValenceElectrons', 'CalcFractionCSP3', 'CalcNumRings',
-           'CalcNumRotatableBonds', 'CalcNumLipinskiHBD', 'CalcNumLipinskiHBA',
-           'CalcNumHeterocycles', 'CalcNumHeavyAtoms', 'CalcNumAromaticRings',
-           'CalcNumAtoms', 'qed']] = descriptors_list
+               'MaxPartialCharge', 'MinPartialCharge', 'NumRadicalElectrons',
+               'NumValenceElectrons', 'CalcFractionCSP3', 'CalcNumRings',
+               'CalcNumRotatableBonds', 'CalcNumLipinskiHBD', 'CalcNumLipinskiHBA',
+               'CalcNumHeterocycles', 'CalcNumHeavyAtoms', 'CalcNumAromaticRings',
+               'CalcNumAtoms', 'qed']] = descriptors
+
 
 
 # Doelvariabele transformeren & limieten stellen dataframe
@@ -80,7 +87,7 @@ complete_df['ec50_mol']=complete_df['ec50_mol'].replace(0, 1e-10)
 complete_df['ec50_molair'] = complete_df['ec50_mol']/ complete_df['MolWt']
 complete_df['ec50_molair_transformed'] = -nm.log10(complete_df['ec50_molair'])
 condition = (complete_df['ec50_molair_transformed'] < 2 ) | (complete_df['ec50_molair_transformed'] > 8)  # Vraag waarom en wat de grenzen zijn
-complete_df=complete_df[~condition]
+complete_df=complete_df[~condition].dropna()
 
 # Dependent & Independent variable
 #x = nm.array(complete_df['ecfp_bit_vectors'].tolist())
@@ -163,8 +170,8 @@ plt.scatter(y_test,y_pred)
 plt.plot(y_test, line, color='red', label='line of current best fit')
 plt.xlabel('y_test')
 plt.ylabel('y_pred')
-plt.xlim(1,10)
-plt.ylim(1,10)
+plt.xlim(2,8)
+plt.ylim(2,8)
 plt.title('Scatterplot with Line of Best Fit (R2 = {:.2f})'.format(r2))
 plt.show()
 
